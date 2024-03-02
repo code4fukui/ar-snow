@@ -1,0 +1,63 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>ar-snow-hex</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+<h1>ar-snow-hex</h1>
+<a href=./>ar-snow</a>, <a href=./hex.html>ar-snow-hex</a><br>
+<br>
+<a href=https://github.com/code4fukui/ar-snow/>src on GitHub</a><br>
+</header>
+
+<div class="xrcontainer" id="container"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://code4fukui.github.io/three.js/build/three.module.js",
+    "three/addons/": "https://code4fukui.github.io/three.js/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import { THREE, createThree, loadGLB } from "./egthree.js";
+
+const { scene, renderer, setAnimationLoop } = createThree(document.body);
+
+//const geo = new THREE.BoxGeometry(0.5, 1, 1.5);
+// (radius : Float, tube : Float, tubularSegments : Integer, radialSegments : Integer, p : Integer, q : Integer)
+const geo = new THREE.TorusKnotGeometry(4, .3, 200, 32, 1, 2);
+//const mat = new THREE.MeshBasicMaterial({ color: 0xff0088 });
+renderer.localClippingEnabled = true;
+const grp = new THREE.Group();
+for (let i = 0; i < 6; i++) {
+  //const mat = new THREE.MeshBasicMaterial({ color: 0xff0000 + (i * 60) });
+  const mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const dth = Math.PI * 2 / 6;
+  const th = dth * i;
+  const cx1 = Math.cos(th);
+  const cy1 = Math.sin(th);
+  const cx2 = Math.cos(th + dth - Math.PI);
+  const cy2 = Math.sin(th + dth - Math.PI);
+  mat.clippingPlanes = [
+    new THREE.Plane(new THREE.Vector3(cx1, cy1, 0), 0),
+    new THREE.Plane(new THREE.Vector3(cx2, cy2, 0), 0),
+  ];
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.rotation.z = th;
+  grp.add(mesh);
+}
+grp.position.z = -10;
+scene.add(grp);
+
+setAnimationLoop(() => {
+  //grp.rotation.y += 0.005;
+  grp.rotation.z += 0.005;
+  //grp.position.x += 0.005;
+});
+</script>
+</body>
+
+</html>
