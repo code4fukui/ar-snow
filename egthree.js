@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { AsyncGLTFLoader } from "https://code4fukui.github.io/ar-mmd/AsyncGLTFLoader.js";
 //import { isVisionPro } from "https://code4fukui.github.io/spatialphoto-viewer/isVisionPro.js";
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 export { THREE };
 
@@ -89,29 +90,20 @@ const createXRButton = (renderer, sessionInit = {}) => {
 };
 
 
-let renderer = null;
-let scene = null;
-let camera = null;
-let bkwidth, bkheight;
-let container = null;
-
-export const createScene = (_container) => {
-  if (scene) return scene;
-  container = _container;
-
-  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); // alpha for AR
+export const createThree = (container) => {
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); // alpha for AR
   renderer.setPixelRatio(devicePixelRatio);
 
   renderer.setSize(container.clientWidth, container.clientHeight);
-  bkwidth = container.clientWidth;
-  bkheight = container.clientHeight;
+  let bkwidth = container.clientWidth;
+  let bkheight = container.clientHeight;
 
   container.appendChild(renderer.domElement);
   renderer.domElement.classList.add("three");
 
-  scene = new THREE.Scene();
+  const scene = new THREE.Scene();
   const aspect = container.clientWidth / container.clientHeight;
-  camera = new THREE.PerspectiveCamera(70, aspect, 0.01, 100);
+  const camera = new THREE.PerspectiveCamera(70, aspect, 0.01, 100);
 
   /*
   const spotLight = new THREE.SpotLight(0xffffff);
@@ -135,7 +127,39 @@ export const createScene = (_container) => {
   container.appendChild(createXRButton(renderer, { spaceType }));
 
   //const offy = isVisionPro ? 1 : 0;
-  return scene;
+
+  // conrols
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.target.set(0, 0, -1);
+  controls.update();
+  controls.enableDamping = true;
+
+  // anim
+  let tick = null;
+  const setAnimationLoop = (f) => {
+    tick = f;
+    if (tick) {
+      renderer.setAnimationLoop(() => {
+        const w = container.clientWidth;
+        const h = container.clientHeight;
+        if (w != bkwidth || h != bkheight) {
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+          renderer.setSize(w, h);
+          bkwidth = w;
+          bkheight = h;
+        }
+
+        controls.update();
+        tick();
+        renderer.render(scene, camera);
+      });
+    } else {
+      renderer.setAnimationLoop(null);
+    }
+  };
+
+  return { scene, renderer, camera, setAnimationLoop };
 };
 
 const gltfloader = new AsyncGLTFLoader();
@@ -144,25 +168,3 @@ export const loadGLB = async (path) => {
   return gltf.scene;
 };
 
-let tick = null;
-export const setAnimationLoop = (f) => {
-  tick = f;
-  if (tick) {
-    renderer.setAnimationLoop(() => {
-      const w = container.clientWidth;
-      const h = container.clientHeight;
-      if (w != bkwidth || h != bkheight) {
-        camera.aspect = w / h;
-        camera.updateProjectionMatrix();
-        renderer.setSize(w, h);
-        bkwidth = w;
-        bkheight = h;
-      }
-
-      tick();
-      renderer.render(scene, camera);
-    });
-  } else {
-    renderer.setAnimationLoop(null);
-  }
-};
