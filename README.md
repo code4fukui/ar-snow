@@ -1,6 +1,6 @@
-# vr-paprika
+# ar-snow
  
-https://code4fukui.github.io/vr-paprika/
+https://code4fukui.github.io/ar-snow/
 
 ## Dependencies
 
