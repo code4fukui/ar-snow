@@ -21,6 +21,4 @@ To run the project, simply open the `index.html` or `hex.html` file in a web bro
 
 ## License
 
-MIT License
-
-Copyright (c) 2024 Taisuke Fukuno
+MIT License — see [LICENSE](LICENSE).
